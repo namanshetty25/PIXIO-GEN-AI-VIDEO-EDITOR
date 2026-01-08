@@ -3,6 +3,51 @@
 
 This repository contains solutions and implementations for the IITISoC Machine Learning Track (Project 05). It is organized into several feature modules related to video and audio processing, leveraging state-of-the-art ML models.
 
+## System Architecture
+
+```mermaid
+flowchart TB
+    User["User / Creator"] -- Upload Video / Prompt --> FE["React Frontend"]
+    FE -- Auth Request --> Auth["JWT Auth Service"]
+    Auth --> FE
+    FE -- Video / Params --> API["Node.js + Express Backend"]
+    API -- Store Media --> Cloudinary[("Cloudinary Storage")]
+    API -- Metadata --> DB[("Database via Prisma")]
+    API -- Feature Selected --> Router{"Which AI Tool?"}
+    Router -- Upscaling --> SR["Video Super Resolution"]
+    SR -- Frames --> FF1["FFmpeg"]
+    FF1 --> RealESRGAN["Real-ESRGAN"]
+    RealESRGAN --> FF2["FFmpeg Rebuild"]
+    FF2 --> Cloudinary
+    Router -- Voice Enhance --> VE["Voice Enhancement"]
+    VE --> FF3["Extract Audio"]
+    FF3 --> VoiceFixer["VoiceFixer Model"]
+    VoiceFixer --> Mixer["Noise Control Mixer"]
+    Mixer --> Whisper["Whisper Subtitle Gen"]
+    Whisper --> FF4["Merge Audio/Subtitles"]
+    FF4 --> Cloudinary
+    Router -- Object Removal --> OR["Object Removal"]
+    OR --> YOLO["YOLOv8x-seg"]
+    YOLO --> MaskGen["Mask Generation"]
+    MaskGen --> ProPainter["ProPainter Inpainting"]
+    ProPainter --> FF5["Audio Merge"]
+    FF5 --> Cloudinary
+    Router -- Style Transfer --> ST["Style Transfer"]
+    ST --> TFHub["TF Hub Style Model"]
+    TFHub --> FF6["Rebuild Video"]
+    FF6 --> Cloudinary
+    Router -- Background Change --> BG["Background Changer"]
+    BG --> RVM["RVM ResNet-50"]
+    RVM --> AlphaBlend["Alpha Blending"]
+    AlphaBlend --> FF7["Final Video"]
+    FF7 --> Cloudinary
+    Router -- "Text-to-GIF" --> GIF["GIF Generator"]
+    GIF --> T2V["ModelScope T2V"]
+    T2V --> Cloudinary
+    Cloudinary --> API
+    API --> FE
+    FE --> User
+```
 ## Features
 
 - **Background Changer**
